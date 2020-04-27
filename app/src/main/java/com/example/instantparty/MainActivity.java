@@ -5,14 +5,22 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.IntentSender;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -30,6 +38,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -42,7 +51,10 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.skyfishjy.library.RippleBackground;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -51,12 +63,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private PlacesClient placesClient;
     private Location mLastKnownLocation;
     private LocationCallback locationCallback;
-    private Button btnFind;
+    private Button btnFind, btnNearby;
     private RippleBackground rippleBg;
     private View mapView;
     private double latitude;
     private double longitude;
     private float DEFAULT_ZOOM = 16;
+
+    AutoCompleteTextView autoCompleteTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,11 +79,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         String apiKey = "AIzaSyDNSYlMnfy-MUNl3MUoRjZDZWYD3WLg8AQ";
 
-        AutoCompleteTextView autoCompleteTextView = findViewById(R.id.autocomplete);
+        autoCompleteTextView = findViewById(R.id.autocomplete);
         autoCompleteTextView.setAdapter(new PlaceAutoSuggestAdapter(MainActivity.this, android.R.layout.simple_list_item_1));
 
+        btnNearby = findViewById(R.id.btn_nearby_find);
         btnFind = findViewById(R.id.btn_find);
         rippleBg = findViewById(R.id.ripple_bg);
+
+        btnFind.setVisibility(View.INVISIBLE);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -83,26 +100,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         placesClient = Places.createClient(this);
 
-//        final AutocompleteSupportFragment autocompleteSupportFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
-//
-//        autocompleteSupportFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
-//        autocompleteSupportFragment.setTypeFilter(TypeFilter.ESTABLISHMENT);
-//        autocompleteSupportFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-//            @Override
-//            public void onPlaceSelected(@NonNull Place place) {
-//                Log.i("TAG", "onPlaceSelected: " + place.getName());
-//                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM));
-//                String searchString = autocompleteSupportFragment.getTag();
-//                Toast.makeText(MainActivity.this, "Search: " + searchString, Toast.LENGTH_SHORT).show();
-//            }
-//
-//            @Override
-//            public void onError(@NonNull Status status) {
-//                Log.i("TAG", "onError: " + status.getStatusMessage());
-//            }
-//        });
-
-        btnFind.setOnClickListener(new View.OnClickListener() {
+        btnNearby.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 rippleBg.startRippleAnimation();
@@ -167,6 +165,94 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         });
+
+        init();
+    }
+
+    private void init() {
+        Log.d("TAG", "init: Initializing");
+
+        autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE || event.getAction() == KeyEvent.ACTION_DOWN || event.getAction() == KeyEvent.KEYCODE_ENTER) {
+                    // execute our method for searching
+                    geoLocate();
+                }
+                return false;
+            }
+        });
+
+        mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+            @Override
+            public boolean onMyLocationButtonClick() {
+                btnNearby.setVisibility(View.VISIBLE);
+                btnFind.setVisibility(View.INVISIBLE);
+                getDeviceLocation();
+                return true;
+            }
+        });
+
+        hideSoftKeyboard();
+    }
+
+    private void geoLocate() {
+        Log.d("TAG", "geoLocate: geolocating");
+
+        String searchString = autoCompleteTextView.getText().toString();
+
+        Geocoder geocoder= new Geocoder(MainActivity.this);
+        List<Address> list = new ArrayList<>();
+        try {
+            list = geocoder.getFromLocationName(searchString, 1);
+        } catch (IOException e) {
+            Log.e("TAG", "geoLocate: IOException: " + e.getMessage() );
+        }
+
+        if(list.size() > 0) {
+            Address address = list.get(0);
+
+            Log.d("TAG", "geoLocate: found a location: " + address.toString());
+
+            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM, address.getAddressLine(0));
+
+            btnNearby.setVisibility(View.INVISIBLE);
+            btnFind.setVisibility(View.VISIBLE);
+
+            btnFind.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    rippleBg.startRippleAnimation();
+                    latitude = address.getLatitude();
+                    longitude = address.getLongitude();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            rippleBg.stopRippleAnimation();
+                            Intent intent = new Intent(MainActivity.this, RestaurantResultsActivity.class);
+                            intent.putExtra("latitude", latitude);
+                            intent.putExtra("longitude", longitude);
+                            startActivity(intent);
+                            finish();
+                        }
+                    }, 2000);
+                }
+            });
+        }
+    }
+
+    private void moveCamera (LatLng latlng, float zoom, String title) {
+        Log.d("TAG", "moveCamera: Moving the camera to: lat: " + latlng.latitude + ", lng: " + latlng.longitude);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, zoom));
+
+        if(!title.equals("My location")){
+            MarkerOptions options = new MarkerOptions()
+                    .position(latlng)
+                    .title(title);
+            mMap.addMarker(options);
+        }
+
+        hideSoftKeyboard();
     }
 
     private void getDeviceLocation() {
@@ -178,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             mLastKnownLocation = task.getResult();
                             if(mLastKnownLocation != null) {
                                 Log.d("TAG", "onComplete: ID: " + mLastKnownLocation.getLatitude() + " " + mLastKnownLocation.getLongitude());
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                                moveCamera(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM, "Current Location");
                                 latitude = mLastKnownLocation.getLatitude();
                                 longitude = mLastKnownLocation.getLongitude();
                             } else {
@@ -195,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                         }
                                         mLastKnownLocation = locationResult.getLastLocation();
                                         Log.d("TAG", "onComplete: ID: " + mLastKnownLocation.getLatitude() + " " + mLastKnownLocation.getLongitude());
-                                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                                        moveCamera(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM, "Current Location");
                                         latitude = mLastKnownLocation.getLatitude();
                                         longitude = mLastKnownLocation.getLongitude();
                                         mFusedLocationProviderClient.removeLocationUpdates(locationCallback);
@@ -208,5 +294,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                     }
                 });
+    }
+
+    private void hideSoftKeyboard() {
+        Log.d("TAG", "hideSoftKeyboard: yes");
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if(imm != null) {
+            imm.hideSoftInputFromWindow(autoCompleteTextView.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+        }
     }
 }

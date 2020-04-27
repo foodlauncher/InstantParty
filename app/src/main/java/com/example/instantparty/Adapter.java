@@ -11,6 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.libraries.places.api.net.PlacesClient;
+
 import java.util.List;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
@@ -18,6 +20,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
     private List<Restaurant> restaurants;
     private Context context;
     private int rowLayout;
+    private PlacesClient placesClient;
     public static class ViewHolder extends RecyclerView.ViewHolder{
         TextView textOne;
         TextView textTwo;
@@ -60,6 +63,9 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
         holder.textFour.setText("Cuisine: " + restaurants.get(position).getRestaurant().getCuisines());
         holder.textFive.setText("Phone number: " + restaurants.get(position).getRestaurant().getPhoneNumbers());
         holder.textSix.setText("Has Table booking: " + restaurants.get(position).getRestaurant().getHasTableBooking());
+        double lat = Double.parseDouble(restaurants.get(position).getRestaurant().getLocation().getLatitude());
+        double lon = Double.parseDouble(restaurants.get(position).getRestaurant().getLocation().getLongitude());
+
 //        Uri u = Uri.parse(restaurants.get(position).getRestaurant().getPhoneNumbers());
 //        if(u!=null) {
 //            holder.callBtn.setOnClickListener(new View.OnClickListener() {

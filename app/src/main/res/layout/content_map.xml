@@ -38,17 +38,32 @@
         <AutoCompleteTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:inputType="text"
             android:id="@+id/autocomplete"
             android:hint="Search Location"
+            android:imeOptions="actionSearch"
+            android:maxLines="1"
             />
 
     </LinearLayout>
+
     <Button
         android:id="@+id/btn_find"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:text="Find Restaurants"
+        android:textColor="@color/colorAccent"
+        android:background="@color/colorPrimary"
+        android:layout_margin="16dp"
+        android:textStyle="bold"/>
+
+    <Button
+        android:id="@+id/btn_nearby_find"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="Find Nearby Restaurants"
         android:textColor="@color/colorAccent"
         android:background="@color/colorPrimary"
         android:layout_margin="16dp"
