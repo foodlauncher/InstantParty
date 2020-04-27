@@ -10,11 +10,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -32,8 +34,15 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.skyfishjy.library.RippleBackground;
+
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -54,6 +63,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        String apiKey = "AIzaSyDNSYlMnfy-MUNl3MUoRjZDZWYD3WLg8AQ";
+
+        AutoCompleteTextView autoCompleteTextView = findViewById(R.id.autocomplete);
+        autoCompleteTextView.setAdapter(new PlaceAutoSuggestAdapter(MainActivity.this, android.R.layout.simple_list_item_1));
+
         btnFind = findViewById(R.id.btn_find);
         rippleBg = findViewById(R.id.ripple_bg);
 
@@ -62,6 +76,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView = mapFragment.getView();
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(MainActivity.this);
+
+        if(!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), apiKey);
+        }
+
+        placesClient = Places.createClient(this);
+
+//        final AutocompleteSupportFragment autocompleteSupportFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+//
+//        autocompleteSupportFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
+//        autocompleteSupportFragment.setTypeFilter(TypeFilter.ESTABLISHMENT);
+//        autocompleteSupportFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+//            @Override
+//            public void onPlaceSelected(@NonNull Place place) {
+//                Log.i("TAG", "onPlaceSelected: " + place.getName());
+//                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM));
+//                String searchString = autocompleteSupportFragment.getTag();
+//                Toast.makeText(MainActivity.this, "Search: " + searchString, Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onError(@NonNull Status status) {
+//                Log.i("TAG", "onError: " + status.getStatusMessage());
+//            }
+//        });
 
         btnFind.setOnClickListener(new View.OnClickListener() {
             @Override

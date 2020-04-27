@@ -21,7 +21,7 @@ public class RestaurantResultsActivity extends AppCompatActivity {
     private TextView textViewResult;
     private final String apiKey = "08990901fb962c7394216bd47b7a613a";
     private double latitude, longitude;
-    private int DEFAULT_COUNT = 10;
+    private int DEFAULT_COUNT = 25;
     private String sortByRealDistance = "real_distance";
     private String sortByRating = "rating";
     private String sortByCost = "cost";
