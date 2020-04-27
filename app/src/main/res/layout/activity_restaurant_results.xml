@@ -9,8 +9,11 @@
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/sortBy"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Sort by: " />
+        android:layout_marginLeft="15dp"
+        android:layout_height="48dp"
+        android:text="Sort by: "
+        android:gravity="center_vertical"
+        android:textSize="16sp"/>
     <RadioGroup
         android:id="@+id/radio_group"
         android:layout_width="wrap_content"
@@ -20,6 +23,7 @@
         android:layout_toRightOf="@id/sortBy">
         <com.google.android.material.radiobutton.MaterialRadioButton
             android:id="@+id/radio_rating"
+            android:checked="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
@@ -38,7 +42,7 @@
         android:layout_height="match_parent"
         android:layout_below="@id/radio_distance"
         tools:ignore="NotSibling"
-        android:layout_marginTop="45dp"/>
+        android:layout_marginTop="48dp"/>
 
     <TextView
         android:layout_width="wrap_content"

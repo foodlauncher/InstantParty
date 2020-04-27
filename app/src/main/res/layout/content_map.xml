@@ -33,7 +33,7 @@
         android:layout_height="50dp"
         android:orientation="horizontal"
         android:layout_margin="20dp"
-        android:background="ddd" >
+        android:background="#ddd">
 
         <AutoCompleteTextView
             android:layout_width="match_parent"
