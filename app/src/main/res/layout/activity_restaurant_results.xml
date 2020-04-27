@@ -6,10 +6,39 @@
     android:layout_height="match_parent"
     tools:context=".RestaurantResultsActivity">
 
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/sortBy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sort by: " />
+    <RadioGroup
+        android:id="@+id/radio_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checkedButton="@+id/distance"
+        android:orientation="horizontal"
+        android:layout_toRightOf="@id/sortBy">
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+            android:text="Rating"/>
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+            android:text="Distance"/>
+    </RadioGroup>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycle"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_below="@id/radio_distance"
+        tools:ignore="NotSibling"
+        android:layout_marginTop="45dp"/>
 
     <TextView
         android:layout_width="wrap_content"
