@@ -1,7 +1,5 @@
 package com.example.instantparty;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,11 +28,14 @@ public class RestaurantResultsActivity extends AppCompatActivity {
     private TextView textViewResult;
     private final String apiKey = "08990901fb962c7394216bd47b7a613a";
     private double latitude, longitude;
+
     private int DEFAULT_COUNT = 25;
     private String sortByRealDistance = "real_distance";
     private String sortByRating = "rating";
     private String sortByCost = "cost";
+
     RecyclerView recyclerView;
+
     List<Restaurant> restaurants1;
     List<Restaurant> restaurants2;
 
@@ -128,6 +129,7 @@ public class RestaurantResultsActivity extends AppCompatActivity {
                     return;
                 }
                 Search search = response.body();
+                response.headers();
 
                 restaurants1 = search.getRestaurants();
 
